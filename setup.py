@@ -34,13 +34,21 @@ with open('requirements.txt') as f:
 
 setup(
     name='pyAutoPort',
-    version='1.0.0',
+    version='1.1.0',
     author='Yu GU',
     author_email='yu.gu@sony.com',
     description="""
     A tool automating UART and ADB interaction
     """,
     license='BSD-3-Clause',
+    python_requires='>=3.8,<3.12',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.08',
+        'Programming Language :: Python :: 3.09',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+    ],
     packages=find_packages(),
     install_requires=requirements,
     entry_points={
@@ -50,6 +58,15 @@ setup(
             'adb_open = pyautoport.adb:adb_open',
             'adb_reopen = pyautoport.adb:adb_reopen',
             'adb_close = pyautoport.adb:adb_close',
+            'start_daemon = pyautoport.Connect:open_class_daemon_on_demand',
+            'adb_connect = pyautoport.Connect:adb_connect_via_bash',
+            'uart_connect = pyautoport.Connect:uart_connect_via_bash',
+            'send = pyautoport.Connect:send_via_bash',
+            'set_log = pyautoport.Connect:set_log_via_bash',
+            'set_timestamp = pyautoport.Connect:set_timestamp_via_bash',
+            'adb_disconnect = pyautoport.Connect:adb_disconnect_via_bash',
+            'uart_disconnect = pyautoport.Connect:uart_disconnect_via_bash',
+            'stop_daemon = pyautoport.Connect:stop_via_bash',
         ],
     },
 )
