@@ -32,17 +32,28 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
+# read the contents of your README file
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
     name='pyAutoPort',
-    version='1.0.0',
+    version='1.0.1',
     author='Yu GU',
     author_email='yu.gu@sony.com',
     description="""
     A tool automating UART and ADB interaction
     """,
     license='BSD-3-Clause',
+    project_urls={
+        "Homepage": "https://github.com/sony/pyAutoPort",
+        "Issues": "https://github.com/sony/pyAutoPort/issues"
+    },
     packages=find_packages(),
     install_requires=requirements,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     entry_points={
         'console_scripts': [
             'uart_send = pyautoport.uart:write_and_read_uart',
