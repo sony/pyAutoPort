@@ -60,7 +60,19 @@ def write_and_read_uart():
     text += '\n'
 
     # Open UART connection
-    uart = serial.Serial(port=port, baudrate=baudrate, timeout=uart_timeout)
+    try:
+        uart = serial.Serial(
+                port=port,
+                baudrate=baudrate,
+                timeout=uart_timeout
+        )
+    except serial.serialutil.SerialException:
+        print(f'''
+Can\'t Open {port}. Did you set port using:
+export TESTER_UART_PORT=/dev/ttyXXX (On Linux)
+set TESTER_UART_PORT=COMx (On Windows)
+        ''')
+        return
 
     # Send text to UART
     for byte_to_encode in text:
