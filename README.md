@@ -14,6 +14,27 @@ pip install pyAutoPort
 
 Run this command INSIDE JUPYTER if you want to use this in a Jupyter notebook or Jupyter Lab.
 
+## Set Configuration
+
+To specify the UART port and baudrate or ADB Serial Number, define them in environment variables like this:
+
+- Linux/MacOS
+
+```bash
+export TESTER_UART_PORT="/dev/ttyACM0"
+export TESTER_UART_BAUDRATE=1250000
+export TESTER_ADB_PORT=Serial_number
+```
+- Windows
+
+```bash
+set TESTER_UART_PORT="COM0"
+set TESTER_UART_BAUDRATE=1250000
+set TESTER_ADB_PORT=Serial_number
+```
+
+> `adb devices -l` can get `Serial_number`. Default `adb shell` if `TESTER_ADB_PORT` not been setted.
+
 ## Sending UART Commands
 
 Send UART commands and receive replies with:
@@ -26,21 +47,6 @@ For example, you should be able to see "connected" in the output after running:
 
 ```bash
 uart_send "echo connected"
-```
-
-To specify the UART port and baudrate, define them in environment variables like this:
-
-- Linux/MacOS
-
-```bash
-export TESTER_UART_PORT="/dev/ttyACM0"
-export TESTER_UART_BAUDRATE=1250000
-```
-- Windows
-
-```bash
-set TESTER_UART_PORT="/dev/ttyACM0"
-set TESTER_UART_BAUDRATE=1250000
 ```
 
 You don't need to send other commands to get output; `uart_send` will return the output.
@@ -75,6 +81,46 @@ adb_close
 These commands simplify the process of sending and receiving data to and from your DUT using UART and ADB in various testing scenarios.
 
 For additional information, refer to the [Basic Mode](#basic-mode) section.
+
+## Interacting support TeraTerm-compatible commands
+
+TeraTerm Mode Support TTL commands which can making automation scripting easier.
+
+### TeraTerm Mode Start
+
+Create a Session, Use connect command to configure the connection.
+
+In a Session, multiple different types of connections can be connected simultaneously without affecting each other.
+
+- Linux/MacOS
+
+```bash
+session_start&
+```
+
+- Windows
+
+```bash
+start /B session_start
+```
+
+### Send TTL commands
+
+Following commands supported
+- connect
+- logstart
+- send
+- disconnect
+
+For additional information, refer to the [TeraTerm Mode](#teraterm-mode) section.
+
+### Session Stop
+
+At the end of the session, all connections will be disconnected and the log will be saved if necessary.
+
+```bash
+session_stop
+```
 
 # Basic Mode
 
@@ -127,6 +173,64 @@ options:
 The `adb_send` command will continuously print text received from ADB until no new text is received within a 1-second timeframe. To extend the timeout duration before stopping, use the `-t TIMEOUT` option.
 
 **IMPORTANT:** In situations where ADB keeps printing text, such as when running logcat, you may need to press `Ctrl-C` to stop forcefully.
+
+# TeraTerm Mode
+
+TeraTerm Mode Support TTL commands on Linux or Windows CLI via adb or uart.
+
+## connect
+
+Start one connection or switch other connection.
+If switch other connection, the existed connection will not be disconnected.
+
+```bash
+connect [uart|adb]
+```
+
+Example:
+```bash
+connect adb     -> ADB connection create
+send xxx        -> send xxx via ADB
+connect uart    -> UART connection create and switch UART
+send xxx        -> send xxx via UART
+connect adb     -> switch ADB
+send xxx        -> send xxx via ADB
+```
+
+## logstart
+
+Start to Saving Received Messages to specified file.
+This command must be used after one connection has been already created.
+
+```bash
+logstart <filename>
+```
+
+- Add TimeStamp in log
+
+```bash
+set_timestamp
+logstart <filename>
+```
+
+## send
+
+Send commands via current connection.
+Received Messages will be printed on CLI.
+
+```bash
+send <date1> <date2> ...
+```
+
+## disconnect
+
+Stop specified connection.
+
+```bash
+disconnect [uart|adb]
+```
+
+Some commands will be supported in the future.
 
 # How to Contribute
 
