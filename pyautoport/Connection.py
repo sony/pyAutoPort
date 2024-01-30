@@ -27,12 +27,53 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# __init__.py
-"""
-Load all functions by default
-"""
+from pyautoport.addon.adb import ADBStrategy
+from pyautoport.addon.tty import TTYStrategy
 
-from .adb import *
-from .uart import *
-from .Connect import *
-from .Connection import *
+class Connection():
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Connection, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self, *args, **kwargs):
+        self._type = None
+        self.strategy = None
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, type_choose):
+        self._type = type_choose
+        if type_choose == 'tty':
+            self.strategy = TTYStrategy()
+        elif type_choose == 'adb':
+            self.strategy = ADBStrategy()
+        else:
+            raise ValueError('Invalid connection type')
+
+    def connect(self, *args, **kwargs):
+        self.strategy.connect(*args, **kwargs)
+
+    def connect_check(self):
+#        return self.strategy.connect_check()
+        return self.strategy.port
+
+    def set_timeout(self, timeout):
+        self.strategy.set_timeout(timeout)
+
+    def set_log(self, log_file):
+        self.strategy.set_log(log_file)
+
+    def set_timestamp(self):
+        self.strategy.timestamp = True
+
+    def send_data(self, data):
+        self.strategy.send_data(data)
+
+    def disconnect(self):
+        self.strategy.disconnect()

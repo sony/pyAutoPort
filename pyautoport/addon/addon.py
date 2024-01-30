@@ -27,12 +27,27 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# __init__.py
-"""
-Load all functions by default
-"""
+from abc import ABC, abstractmethod
 
-from .adb import *
-from .uart import *
-from .Connect import *
-from .Connection import *
+class AddonStrategy(ABC):
+
+    @abstractmethod
+    def set_timeout(self):
+        pass
+
+    @abstractmethod
+    def set_log(self):
+        pass
+
+    @abstractmethod
+    def connect(self):
+        pass
+
+    @abstractmethod
+    def send_data(self):
+        pass
+
+    @abstractmethod
+    def disconnect(self):
+        pass
+
