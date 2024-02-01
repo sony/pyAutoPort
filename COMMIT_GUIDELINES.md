@@ -18,8 +18,8 @@ Each commit message should adhere to the following format:
 
 - feat(user-auth): add user authentication feature
 - fix(api): resolve issue with data retrieval
-- docs(readme): update installation instructions
-- style(css): improve formatting in stylesheets
+- doc(readme): update installation instructions
+- test(adb): add basic mode adb test cases
 
 ## Commit Types
 
@@ -27,7 +27,7 @@ Choose the appropriate type for your commit:
 
 - **feat:** A new feature for the user or a significant change.
 - **fix:** A bug fix.
-- **docs:** Documentation changes.
+- **doc:** Documentation changes.
 - **style:** Code style changes (e.g., formatting).
 - **refactor:** Code refactor without adding new features or fixing bugs.
 - **test:** Adding or modifying tests.
