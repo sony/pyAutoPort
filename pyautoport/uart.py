@@ -27,13 +27,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import serial
+"""
+UART Basic Mode
+"""
+
 import argparse
 import time
 import os
+import serial
 
 
 def write_and_read_uart():
+    """Send and receive reply"""
     # Get UART parameters from environment variable
     port = os.environ.get("TESTER_UART_PORT", "/dev/ttyUSB0")
     baudrate = os.environ.get("TESTER_UART_BAUDRATE", "115200")
@@ -94,8 +99,5 @@ set TESTER_UART_PORT=COMx (On Windows)
 
 
 def uart_send():
-    write_and_read_uart()
-
-
-if __name__ == "__main__":
+    """Python wrapper to provide consistant command name"""
     write_and_read_uart()
