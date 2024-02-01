@@ -18,6 +18,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+        pip install -r requirements.txt
+        # setuptools is no longer installed by default in virtual env since 3.12
+        pip install setuptools
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py' ':!:tests/')
