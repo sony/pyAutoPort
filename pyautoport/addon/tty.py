@@ -27,17 +27,22 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, subprocess, time
-import threading, signal
+"""
+TeraTerm Mode - TTY Connect
+"""
+
+import os
+import time
+import threading
 import serial
 import serial.tools.list_ports
 from pyautoport.addon.addon import AddonStrategy
 
+# pylint: disable=duplicate-code
 class TTYStrategy(AddonStrategy):
-    _instance = None
-    _first_init = True
-    port = None
-    timestamp = False
+    """ Connection via uart """
+    save_log = False
+    log_file = 'tty.log'
 
     def __new__(cls):
         if cls._instance is None:
@@ -47,16 +52,13 @@ class TTYStrategy(AddonStrategy):
     def __init__(self):
         if self._first_init:
             self.timeout = 0.5
-            self.log_file = 'tty.log'
-            self.log = None
-            self.save_log = False
             self.thread = None
+            self.port = None
             self.running = False
             TTYStrategy._first_init = False
 
     def _start_thread(self):
         self.running = True
-        self.log = open(self.log_file, 'w', encoding='utf-8', errors='ignore')
         self.thread = threading.Thread(target=self._read)
         self.thread.start()
 
@@ -65,69 +67,80 @@ class TTYStrategy(AddonStrategy):
         if self.thread:
             self.thread.join(timeout=1)
 
+    def _read(self):
+        has_message = False
+        with open(self.log_file, 'a', encoding='utf-8', errors='ignore') as f:
+            while self.running:
+                output = ''
+                if self.port and self.port.is_open:
+                    output = self.port.readline().decode(encoding='utf-8', errors='ignore')
+                if not self.running:
+                    break
+                if output:
+                    #output = output.strip()
+                    if self.timestamp and has_message:
+                        time_stamp = time.time()
+                        output = '[' + str(time_stamp) + '] ' + output
+                    if has_message:
+                        print(output.strip())
+                    f.write(output.replace('\r\n', '\n').replace('\r', ''))
+                    f.flush()
+                    has_message = True
+                else:
+                    has_message = False
+                    time.sleep(0.1)
+            self.running = False
+
     def set_timeout(self, timeout):
+        """ set timeout in uart session """
         self.timeout = timeout
 
     def set_log(self, log_file):
-        if os.path.exists(self.log_file):
-            if self.log:
-                self.log.close()
-            os.remove(self.log_file)
-        self.log_file = log_file
-        self.save_log = True
-        if self.port:
+        """ set logstart in uart session """
+        if self.port and self.port.is_open:
+            self.port.close()
+            self.port = None
+            self.disconnect()
             port = os.environ.get('TESTER_UART_PORT', '/dev/ttyACM0')
             baudrate = os.environ.get('TESTER_UART_BAUDRATE', '125000')
-            self.connect(port=port, baudrate=baudrate)
+        self.log_file = log_file
+        self.save_log = True
+        self.connect(port=port, baudrate=baudrate)
+        with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
+            f.write('>>>>>>>>>> tty log start\n')
 
     def connect(self, port='/dev/ttyACM0', baudrate=125000):
-        if self.port:
+        """ connect via uart """
+        if self.port and self.port.is_open:
+            self.port.close()
+            self.port = None
             self.disconnect()
-            time.sleep(0.3)
         self._start_thread()
         try:
             self.port = serial.Serial(port=port, baudrate=baudrate, timeout=self.timeout)
-        except:
+        except serial.SerialException:
             self.disconnect()
-            print('connect_uart failed, Please make sure to set the correct {TESTER_UART_PORT} and {TESTER_UART_BAUDRATE}')
+            print('connect_uart failed,'
+                'Please make sure to set the correct {TESTER_UART_PORT} and {TESTER_UART_BAUDRATE}')
             print('COM list:')
-            for port in list(serial.tools.list_ports.comports()):
-                print(f'{port.device}: {port.description}')
+            for info in list(serial.tools.list_ports.comports()):
+                print(f'{info.device}: {info.description}')
 
     def send_data(self, data):
-        self.port.write(data.encode('utf-8'))
-        self.port.write('\n'.encode('utf-8'))
-        time.sleep(0.05)
-
-    def _read(self):
-        has_message = False
-        while self.running:
-            output = ''
-            if self.port:
-                output = self.port.readline().decode(encoding='utf-8', errors='ignore')
-            if not self.running:
-                break
-            if output:
-                #output = output.strip()
-                if self.timestamp and has_message:
-                    time_stamp = time.time()
-                    output = '[' + str(time_stamp) + '] ' + output
-                if has_message:
-                    print(output.strip())
-                self.log.write(output.replace('\r\n', '\n').replace('\r', ''))
-                self.log.flush()
-                has_message = True
-            else:
-                has_message = False
-                time.sleep(0.1)
+        """ send commands via uart session """
+        if self.port and self.port.is_open:
+            self.port.write(data.encode('utf-8'))
+            self.port.write('\n'.encode('utf-8'))
+            time.sleep(0.05)
+        else:
+            print('connect_uart failed,'
+                'Please make sure execute connect uart before')
 
     def disconnect(self):
+        """ disconnect from uart """
         if self.running:
+            time.sleep(0.3)
             self._stop_thread()
         if not self.save_log and os.path.exists(self.log_file):
-            if self.log:
-                self.log.close()
+            time.sleep(0.3)
             os.remove(self.log_file)
-        if self.port:
-            self.port.close()
-            self.port = None

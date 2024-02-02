@@ -34,5 +34,5 @@ Load all functions by default
 
 from .adb import *
 from .uart import *
-from .Connect import *
-from .Connection import *
+from .teraterm import *
+from .session import *

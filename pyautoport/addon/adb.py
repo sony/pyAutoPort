@@ -27,15 +27,25 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, subprocess, time
-import threading, signal
+"""
+TeraTrem Mode - ADB Connect
+"""
+
+import os
+import subprocess
+import time
+import threading
+import signal
+from queue import Queue
 from pyautoport.addon.addon import AddonStrategy
 
+# pylint: disable=duplicate-code
 class ADBStrategy(AddonStrategy):
-    _instance = None
-    _first_init = True
-    port = None
-    timestamp = False
+    """ Connection via adb """
+    log_file = 'adb.log'
+    save_log = False
+    data = Queue()
+    adb_event = threading.Event()
 
     def __new__(cls):
         if cls._instance is None:
@@ -45,100 +55,131 @@ class ADBStrategy(AddonStrategy):
     def __init__(self):
         if self._first_init:
             self.timeout = 1
-            self.log_file = 'adb.log'
-            self.log = None
-            self.save_log = False
             self.thread = None
             self.running = False
+            self.cmd = 'adb shell'
             ADBStrategy._first_init = False
 
     def _start_thread(self):
         self.running = True
-        self.log = open(self.log_file, 'w', encoding='utf-8', errors='ignore')
-        self.thread = threading.Thread(target=self._read)
-        self.thread.setDaemon(True)
+        self.adb_event.clear()
+        self.thread = threading.Thread(target=self._create_process)
+        self.thread.daemon = True
         self.thread.start()
 
     def _stop_thread(self):
         self.running = False
+        while self.adb_event.is_set():
+            time.sleep(0.1)
         if self.thread:
             self.thread.join(timeout=1)
 
+    def _create_process(self):
+        self.adb_event.set()
+        if os.name == 'posix':
+            with subprocess.Popen(
+                    self.cmd,
+                    shell=True,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    start_new_session=True
+            ) as port:
+                self._read_and_write(port)
+                os.killpg(os.getpgid(port.pid), signal.SIGTERM)
+        if os.name == 'nt':
+            with subprocess.Popen(
+                    self.cmd,
+                    shell=False,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE
+            ) as port:
+                self._read_and_write(port)
+                subprocess.run(
+                        ['taskkill', '/T', '/F', '/PID', str(port.pid)],
+                        timeout=2,
+                        check=False
+                    )
+        self.adb_event.clear()
+
+    def _read_and_write(self, port):
+        read_thread = threading.Thread(target=self._read, args=(port,))
+        read_thread.daemon = True
+        read_thread.start()
+        self._write(port)
+        read_thread.join(timeout=1)
+
+    def _write(self, port):
+        while self.running:
+            while self.data.qsize() > 0:
+                write_data = self.data.get()
+                if port.stdin.closed:
+                    print('process of [adb shell] was exited\n')
+                    self.running = False
+                    break
+                port.stdin.write(write_data)
+                port.stdin.flush()
+
+    def _read(self, port):
+        has_message = False
+        with open(self.log_file, 'a', encoding='utf-8', errors='ignore') as f:
+            while self.running:
+                read_data = ''
+                if port.stdout.closed:
+                    print('process of [adb shell] was exited\n')
+                    self.running = False
+                    break
+                read_data = port.stdout.readline().decode(encoding='utf-8', errors='ignore')
+                if read_data:
+                    if self.timestamp and has_message:
+                        time_stamp = time.time()
+                        read_data = '[' + str(time_stamp) + '] ' + read_data
+                    if has_message:
+                        print(read_data.strip())
+                    f.write(read_data.replace('\r\n', '\n').replace('\r', ''))
+                    f.flush()
+                    has_message = True
+                else:
+                    has_message = False
+                    time.sleep(0.1)
+
     def set_timeout(self, timeout):
+        """ set timeout in adb session """
         self.timeout = timeout
 
     def set_log(self, log_file):
-        if os.path.exists(self.log_file):
-            if self.log:
-                self.log.close()
-            os.remove(self.log_file)
+        """ set logstart in adb session """
+        if self.running:
+            self.disconnect()
+            serial_port = os.environ.get('TESTER_ADB_PORT', '')
         self.log_file = log_file
         self.save_log = True
-        if self.port:
-            serial_port = os.environ.get('TESTER_ADB_PORT', '')
-            self.connect(serial_port=serial_port)
+        self.connect(serial_port=serial_port)
+        with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
+            f.write('>>>>>>>>>> adb log start\n')
 
     def connect(self, serial_port=''):
-        if self.port:
+        """ connect via adb """
+        if self.running:
             self.disconnect()
-            time.sleep(0.3)
-        self._start_thread()
         if serial_port != '':
-            cmd = 'adb -s ' + str(serial_port) + ' shell'
-        else:
-            cmd = 'adb shell'
-        if os.name == 'posix':
-            self.port = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, preexec_fn=os.setsid)
-            os.set_blocking(self.port.stdout.fileno(), False)
-        if os.name == 'nt':
-            self.port = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-#        os.set_blocking(self.port.stdout.fileno(), False)
+            self.cmd = 'adb -s ' + str(serial_port) + ' shell'
+        self._start_thread()
 
     def send_data(self, data):
-        self.port.stdin.write(data.encode('utf-8'))
-        self.port.stdin.write('\n'.encode('utf-8'))
-        self.port.stdin.flush()
-
-    def _read(self):
-        has_message = False
-        while self.running:
-            output = ''
-            if self.port:
-                output = self.port.stdout.readline().decode(encoding='utf-8', errors='ignore')
-                if self.port is None or self.port.poll() is not None:
-                    print('process of [adb shell] was exited\n')
-                    self.port = None
-                    break
-            if not self.running:
-                break
-            if output:
-                if self.timestamp and has_message:
-                    time_stamp = time.time()
-                    output = '[' + str(time_stamp) + '] ' + output
-                if has_message:
-                    print(output.strip())
-                self.log.write(output.replace('\r\n', '\n').replace('\r', ''))
-                self.log.flush()
-                has_message = True
-            else:
-                has_message = False
-                time.sleep(0.1)
+        """ send commands via adb session """
+        if self.adb_event.is_set():
+            self.data.put(data.encode('utf-8'))
+            self.data.put('\n'.encode('utf-8'))
+            time.sleep(0.05)
+        else:
+            print('connect_adb failed,'
+                'Please make sure execute connect adb before')
 
     def disconnect(self):
+        """ disconnect from adb """
         if self.running:
             self._stop_thread()
+            time.sleep(0.3)
         if not self.save_log and os.path.exists(self.log_file):
-            if self.log:
-                self.log.close()
+            time.sleep(0.3)
             os.remove(self.log_file)
-        if self.port:
-            if os.name == 'posix':
-                self.port.terminate()
-                self.port.wait()
-                os.killpg(self.port.pid, signal.SIGTERM)
-            if os.name == 'nt':
-                subprocess.run(
-                        ['taskkill', '/T', '/F', '/PID', str(self.port.pid)],
-                        timeout=2
-                    )
-            self.port = None

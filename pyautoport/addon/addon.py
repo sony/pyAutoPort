@@ -27,27 +27,34 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+TeraTerm Mode - abstractmethod
+"""
+
 from abc import ABC, abstractmethod
 
 class AddonStrategy(ABC):
+    """ abstractmethod for session """
+    _instance = None
+    _first_init = True
+    timestamp = False
 
     @abstractmethod
-    def set_timeout(self):
-        pass
+    def set_timeout(self, timeout):
+        """ abstractmentod for set timeout """
 
     @abstractmethod
-    def set_log(self):
-        pass
+    def set_log(self, log_file):
+        """ abstractmentod for set logstart """
 
     @abstractmethod
     def connect(self):
-        pass
+        """ abstractmentod for connect """
 
     @abstractmethod
-    def send_data(self):
-        pass
+    def send_data(self, data):
+        """ abstractmentod for send command """
 
     @abstractmethod
     def disconnect(self):
-        pass
-
+        """ abstractmentod for disconnect """

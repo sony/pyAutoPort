@@ -28,6 +28,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # __init__.py
+"""
+Load all addon functions by default
+"""
 
 from .adb import *
 from .tty import *
