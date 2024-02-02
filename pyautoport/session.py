@@ -27,27 +27,34 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+TeraTerm Mode - Connect Session
+"""
+
 from pyautoport.addon.adb import ADBStrategy
 from pyautoport.addon.tty import TTYStrategy
 
-class Connection():
+class ConnectSession():
+    """ Base Class """
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(Connection, cls).__new__(cls)
+            cls._instance = super(ConnectSession, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self._type = None
         self.strategy = None
 
     @property
     def type(self):
+        """ get session type """
         return self._type
 
     @type.setter
     def type(self, type_choose):
+        """ set session type """
         self._type = type_choose
         if type_choose == 'tty':
             self.strategy = TTYStrategy()
@@ -57,23 +64,29 @@ class Connection():
             raise ValueError('Invalid connection type')
 
     def connect(self, *args, **kwargs):
+        """ invoke connect """
         self.strategy.connect(*args, **kwargs)
 
     def connect_check(self):
-#        return self.strategy.connect_check()
-        return self.strategy.port
+        """ get connect status """
+        return self.strategy.running
 
     def set_timeout(self, timeout):
+        """ set timeout """
         self.strategy.set_timeout(timeout)
 
     def set_log(self, log_file):
+        """ log start """
         self.strategy.set_log(log_file)
 
     def set_timestamp(self):
+        """ set timestamp """
         self.strategy.timestamp = True
 
     def send_data(self, data):
+        """ send data via connection """
         self.strategy.send_data(data)
 
     def disconnect(self):
+        """ invoke disconnect """
         self.strategy.disconnect()
