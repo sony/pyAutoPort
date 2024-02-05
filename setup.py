@@ -27,13 +27,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+Setup Script
+"""
+
+import sys
+from pathlib import Path
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
+with open('requirements.txt', encoding=sys.getfilesystemencoding()) as f:
     requirements = f.read().splitlines()
 
 # read the contents of your README file
-from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
