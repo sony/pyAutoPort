@@ -155,7 +155,7 @@ class ADBStrategy(AddonStrategy):
         self.save_log = True
         self.connect(serial_port=serial_port)
         with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
-            f.write('>>>>>>>>>> adb log start\n')
+            f.write(f'>>>>>>>>>> adb log start, port={serial_port}\n')
 
     def connect(self, serial_port=''):
         """ connect via adb """
