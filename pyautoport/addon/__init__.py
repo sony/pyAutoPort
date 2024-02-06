@@ -29,10 +29,9 @@
 
 # __init__.py
 """
-Load all functions by default
+Load all addon functions by default
 """
 
 from .adb import *
-from .uart import *
-from .teraterm import *
-from .session import *
+from .tty import *
+from .addon import *

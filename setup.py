@@ -44,7 +44,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='pyAutoPort',
-    version='1.1.0',
+    version='1.2.0',
     author='Yu GU',
     author_email='yu.gu@sony.com',
     description="""
@@ -55,6 +55,14 @@ setup(
         "Homepage": "https://github.com/sony/pyAutoPort",
         "Issues": "https://github.com/sony/pyAutoPort/issues"
     },
+    python_requires='>=3.8,<3.12',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.08',
+        'Programming Language :: Python :: 3.09',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+    ],
     packages=find_packages(),
     install_requires=requirements,
     long_description=long_description,
@@ -66,6 +74,13 @@ setup(
             'adb_open = pyautoport.adb:adb_open',
             'adb_reopen = pyautoport.adb:adb_reopen',
             'adb_close = pyautoport.adb:adb_close',
+            'session_start = pyautoport.teraterm:open_session_start',
+            'connect = pyautoport.teraterm:connect_via_bash',
+            'send = pyautoport.teraterm:send_via_bash',
+            'logstart = pyautoport.teraterm:set_log_via_bash',
+            'set_timestamp = pyautoport.teraterm:set_timestamp_via_bash',
+            'disconnect = pyautoport.teraterm:disconnect_via_bash',
+            'session_stop = pyautoport.teraterm:session_stop',
         ],
     },
 )
