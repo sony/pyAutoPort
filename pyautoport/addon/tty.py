@@ -107,7 +107,7 @@ class TTYStrategy(AddonStrategy):
         self.save_log = True
         self.connect(port=port, baudrate=baudrate)
         with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
-            f.write('>>>>>>>>>> tty log start\n')
+            f.write(f'>>>>>>>>>> tty log start, port={port}, baudrate={baudrate}\n')
 
     def connect(self, port='/dev/ttyACM0', baudrate=125000):
         """ connect via uart """
