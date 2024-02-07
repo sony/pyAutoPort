@@ -44,7 +44,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='pyAutoPort',
-    version='1.2.0',
+    version='1.2.1',
     author='Yu GU',
     author_email='yu.gu@sony.com',
     description="""
@@ -58,8 +58,8 @@ setup(
     python_requires='>=3.8,<3.12',
     classifiers=[
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.08',
-        'Programming Language :: Python :: 3.09',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
     ],
