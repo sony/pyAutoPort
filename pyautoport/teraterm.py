@@ -99,6 +99,8 @@ def recv_handle(session, queue_recv):
                 set_log(session, data[data_index+1:])
             if data_function == 'set_timestamp' and check_connection(session):
                 set_timestamp(session)
+            if data_function == 'pause':
+                time.sleep(float(data[data_index+1:]))
             time.sleep(0.3)
 
 def check_connection(session):
@@ -157,6 +159,18 @@ def set_timestamp(session):
     """ set timestamp in session """
     session.set_timestamp()
 
+def client_socket_send(cmd, need_close=False):
+    """ checkt client socket has been created before send command """
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client_socket.connect(('localhost', PORT_WRITE))
+    except ConnectionRefusedError:
+        print('Did you run session_start &')
+    client_socket.send(cmd)
+    time.sleep(0.5)
+    if need_close:
+        client_socket.close()
+
 def connect_via_bash():
     """ Python or Bash entry for connect """
     parser = argparse.ArgumentParser()
@@ -167,14 +181,10 @@ def connect_via_bash():
     method = infos[0]
 
     open_session_start()
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('localhost', PORT_WRITE))
     if method == 'adb':
-        client_socket.send('itconnect@adb\n'.encode())
-    elif method == 'uart':
-        client_socket.send('itconnect@tty\n'.encode())
-    else:
-        parser.print_help()
+        client_socket_send('itconnect@adb\n'.encode())
+    if method == 'uart':
+        client_socket_send('itconnect@tty\n'.encode())
     time.sleep(0.5)
 
 def disconnect_via_bash():
@@ -187,17 +197,10 @@ def disconnect_via_bash():
     method = infos[0]
 
     open_session_start()
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        client_socket.connect(('localhost', PORT_WRITE))
-    except ConnectionRefusedError:
-        print('Did you run session_start &')
     if method == 'adb':
-        client_socket.send('itdisconnect@adb\n'.encode())
-    elif method == 'uart':
-        client_socket.send('itdisconnect@tty\n'.encode())
-    else:
-        parser.print_help()
+        client_socket_send('itdisconnect@adb\n'.encode())
+    if method == 'uart':
+        client_socket_send('itdisconnect@tty\n'.encode())
     time.sleep(0.5)
 
 def send_via_bash():
@@ -206,52 +209,28 @@ def send_via_bash():
     parser.add_argument('text', nargs='+', help='Text to send via Terminal')
     args = parser.parse_args()
     text = ' '.join(args.text)
-
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        client_socket.connect(('localhost', PORT_WRITE))
-    except ConnectionRefusedError:
-        print('Did you run session_start &')
-
-    client_socket.send(f'itsend@{text}\n'.encode())
-    time.sleep(0.5)
+    client_socket_send(f'itsend@{text}\n'.encode())
 
 def set_log_via_bash():
     """ Python or Bash entry for logstart """
     parser = argparse.ArgumentParser()
-    parser.add_argument('file', nargs='+', help='Save log')
+    parser.add_argument('file', help='Save log')
     args = parser.parse_args()
-    file_name = ' '.join(args.file)
-
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        client_socket.connect(('localhost', PORT_WRITE))
-    except ConnectionRefusedError:
-        print('Did you run session_start &')
-
-    client_socket.send(f'itsave@{file_name}\n'.encode())
-    time.sleep(0.5)
+    client_socket_send(f'itsave@{args.file}\n'.encode())
 
 def set_timestamp_via_bash():
     """ Python or Bash entry for set timestamp display """
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        client_socket.connect(('localhost', PORT_WRITE))
-    except ConnectionRefusedError:
-        print('Did you run session_start &')
+    client_socket_send('itset_timestamp@\n'.encode())
 
-    client_socket.send('itset_timestamp@\n'.encode())
-    time.sleep(0.5)
+def set_pause_via_bash():
+    """ Python or Bash entry for time to sleep """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('time', type=int, help='milliseconds')
+    args = parser.parse_args()
+    pause_time = args.time / 1000
+    client_socket_send(f'itpause@{pause_time}\n'.encode())
 
 def session_stop():
     """ Python or Bash entry for stop session """
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        client_socket.connect(('localhost', PORT_WRITE))
-    except ConnectionRefusedError:
-        print('Did you run session_start &')
-
-    client_socket.send('itstop@\n'.encode())
-    time.sleep(0.5)
-    client_socket.close()
+    client_socket_send('itstop@\n'.encode(), True)
     os.remove(PID_FILE)
