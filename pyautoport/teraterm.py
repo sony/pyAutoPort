@@ -64,9 +64,8 @@ def session_start():
 
     while session is not None:
         client_socket, _ = server_socket.accept()
-        ready = select.select([client_socket], [], [], 0.25)
+        ready = select.select([client_socket], [], [], 0)
         while ready[0]:
-            ready = select.select([client_socket], [], [], 0.25)
             data = client_socket.recv(1024).decode().strip()
             if len(data) > 2 and data[0:2] == 'it':
                 queue_recv.put(data)
@@ -76,6 +75,7 @@ def session_start():
                 client_socket.send('Stop listening\n'.encode())
                 client_socket.close()
                 return
+            ready = select.select([client_socket], [], [], 0)
 
 def recv_handle(session, queue_recv):
     """ receive commands handle """
