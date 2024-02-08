@@ -175,6 +175,16 @@ class ADBStrategy(AddonStrategy):
             print('connect_adb failed,'
                 'Please make sure execute connect adb before')
 
+    def send_data_to_log(self, data):
+        """ send data to adb's log """
+        if not self.save_log:
+            print('Cannot send data to log file,'
+                'Please execute logstart before')
+        else:
+            with open(self.log_file, 'ab') as f:
+                f.write(data.encode('utf-8'))
+                f.write('\n'.encode('utf-8'))
+
     def disconnect(self):
         """ disconnect from adb """
         if self.running:

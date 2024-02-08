@@ -101,6 +101,8 @@ def recv_handle(session, queue_recv):
                 set_timestamp(session)
             if data_function == 'pause':
                 time.sleep(float(data[data_index+1:]))
+            if data_function == 'send_log' and check_connection(session):
+                send_log(session, data[data_index+1:])
             time.sleep(0.3)
 
 def check_connection(session):
@@ -158,6 +160,10 @@ def set_log(session, file_name):
 def set_timestamp(session):
     """ set timestamp in session """
     session.set_timestamp()
+
+def send_log(session, text):
+    """ send text into log in session """
+    session.send_data_to_log(text)
 
 def client_socket_send(cmd, need_close=False):
     """ checkt client socket has been created before send command """
@@ -229,6 +235,14 @@ def set_pause_via_bash():
     args = parser.parse_args()
     pause_time = args.time / 1000
     client_socket_send(f'itpause@{pause_time}\n'.encode())
+
+def send_log_via_bash():
+    """ Python or Bash entry for logwrite commands """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('text', nargs='+', help='Text to send into log')
+    args = parser.parse_args()
+    text = ' '.join(args.text)
+    client_socket_send(f'itsend_log@{text}\n'.encode())
 
 def session_stop():
     """ Python or Bash entry for stop session """

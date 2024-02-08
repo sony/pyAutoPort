@@ -56,5 +56,9 @@ class AddonStrategy(ABC):
         """ abstractmentod for send command """
 
     @abstractmethod
+    def send_data_to_log(self, data):
+        """ abstractmentod for send date to logfile """
+
+    @abstractmethod
     def disconnect(self):
         """ abstractmentod for disconnect """

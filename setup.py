@@ -79,6 +79,7 @@ setup(
             'send = pyautoport.teraterm:send_via_bash',
             'mpause = pyautoport.teraterm:set_pause_via_bash',
             'logstart = pyautoport.teraterm:set_log_via_bash',
+            'logwrite = pyautoport.teraterm:send_log_via_bash',
             'set_timestamp = pyautoport.teraterm:set_timestamp_via_bash',
             'disconnect = pyautoport.teraterm:disconnect_via_bash',
             'session_stop = pyautoport.teraterm:session_stop',
