@@ -172,6 +172,7 @@ def client_socket_send(cmd, need_close=False):
         client_socket.connect(('localhost', PORT_WRITE))
     except ConnectionRefusedError:
         print('Did you run session_start &')
+        return
     client_socket.send(cmd)
     time.sleep(0.5)
     if need_close:
