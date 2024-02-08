@@ -49,6 +49,7 @@ sleep 3
 echo "[Testing saving log]"
 logstart test.log
 send 'pwd'
+logstop
 echo "### CONFIRM saving log file exists ###"
 sleep 1
 ls -al test.log

@@ -146,13 +146,13 @@ class ADBStrategy(AddonStrategy):
         """ set timeout in adb session """
         self.timeout = timeout
 
-    def set_log(self, log_file):
+    def set_log(self, log_file='adb.log', save_flag=True):
         """ set logstart in adb session """
         if self.running:
             self.disconnect()
             serial_port = os.environ.get('TESTER_ADB_PORT', '')
         self.log_file = log_file
-        self.save_log = True
+        self.save_log = save_flag
         self.connect(serial_port=serial_port)
         with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
             f.write(f'>>>>>>>>>> adb log start, port={serial_port}\n')
