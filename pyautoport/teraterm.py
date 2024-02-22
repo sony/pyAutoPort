@@ -99,6 +99,8 @@ def recv_handle(session, queue_recv):
                 set_log(session, data[data_index+1:], True)
             if data_function == 'set_timestamp' and check_connection(session):
                 set_timestamp(session)
+            if data_function == 'set_timeout' and check_connection(session):
+                set_timeout(session, data[data_index+1:])
             if data_function == 'pause':
                 time.sleep(float(data[data_index+1:]))
             if data_function == 'send_log' and check_connection(session):
@@ -166,6 +168,10 @@ def set_log(session, file_name, save_flag):
 def set_timestamp(session):
     """ set timestamp in session """
     session.set_timestamp()
+
+def set_timeout(session, timeout):
+    """ set timeout in session """
+    session.set_timeout(float(timeout))
 
 def send_log(session, text):
     """ send text into log in session """
@@ -238,6 +244,13 @@ def stop_log_via_bash():
 def set_timestamp_via_bash():
     """ Python or Bash entry for set timestamp display """
     client_socket_send('itset_timestamp@\n'.encode())
+
+def set_timeout_via_bash():
+    """ Python or Bash entry for set timeout for session """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('time', type=int, help='milliseconds')
+    args = parser.parse_args()
+    client_socket_send(f'itset_timeout@{args.time}\n'.encode())
 
 def set_pause_via_bash():
     """ Python or Bash entry for time to sleep """
