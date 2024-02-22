@@ -59,6 +59,7 @@ class ADBStrategy(AddonStrategy):
             self.running = False
             self.cmd = 'adb shell'
             ADBStrategy._first_init = False
+            self.read = {"exist": False, "find": '', "found": ''}
 
     def _start_thread(self):
         self.running = True
@@ -138,6 +139,10 @@ class ADBStrategy(AddonStrategy):
                     f.write(read_data.replace('\r\n', '\n').replace('\r', ''))
                     f.flush()
                     has_message = True
+                    if self.read["find"] != '' and self.read["find"] in read_data:
+                        self.read["exist"] = True
+                        self.read["found"] = read_data.replace('\r\n', '\n').replace('\r', '')
+                        self.read['find'] = ''
                 else:
                     has_message = False
                     time.sleep(0.1)
@@ -184,6 +189,21 @@ class ADBStrategy(AddonStrategy):
             with open(self.log_file, 'ab') as f:
                 f.write(data.encode('utf-8'))
                 f.write('\n'.encode('utf-8'))
+
+    def read_data(self, data):
+        """ read data via adb session """
+        start_time = time.time()
+        self.read = {"exist": False, "find": data, "found": ''}
+        while self.running:
+            if self.read["exist"]:
+                print(f'>>>>>>>>>> Found message: {self.read["found"]}')
+                return True
+            current_time = time.time() - start_time
+            if current_time >= self.timeout:
+                print('>>>>>>>>>> Not Found message, Timeout occureed!!!')
+                return False
+        print('>>>>>>>>>> Read log Thread not exist, Please check it.')
+        return False
 
     def disconnect(self):
         """ disconnect from adb """

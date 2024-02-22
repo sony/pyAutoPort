@@ -91,6 +91,10 @@ class ConnectSession():
         """ send data to log """
         self.strategy.send_data_to_log(data)
 
+    def read_data(self, data):
+        """ read data """
+        self.strategy.read_data(data)
+
     def disconnect(self):
         """ invoke disconnect """
         self.strategy.disconnect()

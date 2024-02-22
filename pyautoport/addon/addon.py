@@ -60,5 +60,9 @@ class AddonStrategy(ABC):
         """ abstractmentod for send date to logfile """
 
     @abstractmethod
+    def read_data(self, data):
+        """ abstractmentod for read data """
+
+    @abstractmethod
     def disconnect(self):
         """ abstractmentod for disconnect """
