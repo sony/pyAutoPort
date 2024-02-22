@@ -105,6 +105,8 @@ def recv_handle(session, queue_recv):
                 time.sleep(float(data[data_index+1:]))
             if data_function == 'send_log' and check_connection(session):
                 send_log(session, data[data_index+1:])
+            if data_function == 'wait_log' and check_connection(session):
+                wait_log(session, data[data_index+1:])
             if data_function == 'logstop' and check_connection(session):
                 set_log(session, None, False)
             time.sleep(0.3)
@@ -176,6 +178,10 @@ def set_timeout(session, timeout):
 def send_log(session, text):
     """ send text into log in session """
     session.send_data_to_log(text)
+
+def wait_log(session, text):
+    """ wait text in log in session """
+    session.read_data(text)
 
 def client_socket_send(cmd, need_close=False):
     """ checkt client socket has been created before send command """
@@ -267,6 +273,14 @@ def send_log_via_bash():
     args = parser.parse_args()
     text = ' '.join(args.text)
     client_socket_send(f'itsend_log@{text}\n'.encode())
+
+def wait_log_via_bash():
+    """ Python or Bash entry for wait string exist in log or timeout occureed """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('text', nargs='+', help='Text to wait')
+    args = parser.parse_args()
+    text = ' '.join(args.text)
+    client_socket_send(f'itwait_log@{text}\n'.encode())
 
 def session_stop():
     """ Python or Bash entry for stop session """

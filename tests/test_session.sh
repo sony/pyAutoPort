@@ -44,11 +44,16 @@ send 'ls'
 echo "### COMFIRM it takes 2sec to send log ###"
 mpause 2000
 send 'ls'
+set_timeout 2
+send 'ping 127.0.0.1 -c 10'
+echo "### COMFIRM check waitln succeed ###"
+waitln 'bytes'
 
 sleep 3
 echo "[Testing saving log]"
 logstart test.log
 send 'pwd'
+logwrite '>>> log stop'
 logstop
 echo "### CONFIRM saving log file exists ###"
 sleep 1
