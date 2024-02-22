@@ -82,6 +82,7 @@ setup(
             'logwrite = pyautoport.teraterm:send_log_via_bash',
             'logstop = pyautoport.teraterm:stop_log_via_bash',
             'set_timestamp = pyautoport.teraterm:set_timestamp_via_bash',
+            'set_timeout = pyautoport.teraterm:set_timeout_via_bash',
             'disconnect = pyautoport.teraterm:disconnect_via_bash',
             'session_stop = pyautoport.teraterm:session_stop',
         ],
