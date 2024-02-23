@@ -41,6 +41,12 @@ echo "[Testing log display]"
 connect adb
 set_timestamp
 send 'ls'
+echo "### COMFIRM it takes 2sec to send log ###"
+mpause 2000
+send 'ls'
+
+sleep 3
+echo "[Testing saving log]"
 logstart test.log
 send 'pwd'
 echo "### CONFIRM saving log file exists ###"
