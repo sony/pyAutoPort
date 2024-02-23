@@ -79,36 +79,38 @@ def session_start():
 
 def recv_handle(session, queue_recv):
     """ receive commands handle """
+    connect_actions = {
+            "connect": open_conn,
+            "disconnect": close_conn,
+            }
+    handle_actions = {
+            "send": send,
+            "set_timeout": set_timeout,
+            "send_log": send_log,
+            "wait_log": wait_log,
+            }
     while session is not None:
         if queue_recv.qsize() > 0:
             data = queue_recv.get()
             data_index = data.find('@')
             data_function = data[2:data_index]
-            if data_function == 'connect':
-                open_conn(session, data[data_index+1:])
-            if data_function == 'disconnect':
-                close_conn(session, data[data_index+1:])
+            if data_function in connect_actions:
+                connect_actions[data_function](session, data[data_index+1:])
+            if data_function in handle_actions and check_connection(session):
+                handle_actions[data_function](session, data[data_index+1:])
             if data_function == 'stop':
                 close_conn(session, 'all')
                 print('Server listening stop')
                 event_stop_session.set()
                 break
-            if data_function == 'send' and check_connection(session):
-                send(session, data[data_index+1:])
             if data_function == 'logstart' and check_connection(session):
                 set_log(session, data[data_index+1:], True)
-            if data_function == 'set_timestamp' and check_connection(session):
-                set_timestamp(session)
-            if data_function == 'set_timeout' and check_connection(session):
-                set_timeout(session, data[data_index+1:])
-            if data_function == 'pause':
-                time.sleep(float(data[data_index+1:]))
-            if data_function == 'send_log' and check_connection(session):
-                send_log(session, data[data_index+1:])
-            if data_function == 'wait_log' and check_connection(session):
-                wait_log(session, data[data_index+1:])
             if data_function == 'logstop' and check_connection(session):
                 set_log(session, None, False)
+            if data_function == 'set_timestamp' and check_connection(session):
+                set_timestamp(session)
+            if data_function == 'pause':
+                time.sleep(float(data[data_index+1:]))
             time.sleep(0.3)
 
 def check_connection(session):
