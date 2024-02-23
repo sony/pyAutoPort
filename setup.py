@@ -75,6 +75,8 @@ setup(
             'adb_reopen = pyautoport.adb:adb_reopen',
             'adb_close = pyautoport.adb:adb_close',
             'session_start = pyautoport.teraterm:open_session_start',
+            'getenv = pyautoport.teraterm:get_env_via_bash',
+            'setenv = pyautoport.teraterm:set_env_via_bash',
             'connect = pyautoport.teraterm:connect_via_bash',
             'send = pyautoport.teraterm:send_via_bash',
             'mpause = pyautoport.teraterm:set_pause_via_bash',

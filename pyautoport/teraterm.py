@@ -80,6 +80,8 @@ def session_start():
 def recv_handle(session, queue_recv):
     """ receive commands handle """
     connect_actions = {
+            "get_env": get_env,
+            "set_env": set_env,
             "connect": open_conn,
             "disconnect": close_conn,
             }
@@ -125,6 +127,15 @@ def open_session_start():
     if not os.path.exists(PID_FILE):
         start_thread = threading.Thread(target=session_start)
         start_thread.start()
+
+def get_env(session, key):
+    """ get env """
+    session.get_env(key)
+
+def set_env(session, param):
+    """ set env """
+    key, value = param.split()
+    session.set_env(str(key), str(value))
 
 def open_conn(session, port):
     """ session connect """
@@ -197,6 +208,22 @@ def client_socket_send(cmd, need_close=False):
     time.sleep(0.5)
     if need_close:
         client_socket.close()
+
+def get_env_via_bash():
+    """ Python or Bash get env """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('envname', help='Environment Name')
+    args = parser.parse_args()
+    client_socket_send(f'itget_env@{args.envname}\n'.encode())
+
+def set_env_via_bash():
+    """ Python or Bash set env """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('envname', help='Environment Name')
+    parser.add_argument('strvar', help='Environment Value')
+    args = parser.parse_args()
+    var = ' '.join([args.envname, args.strvar])
+    client_socket_send(f'itset_env@{var}\n'.encode())
 
 def connect_via_bash():
     """ Python or Bash entry for connect """
