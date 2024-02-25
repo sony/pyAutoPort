@@ -136,6 +136,16 @@ class TTYStrategy(AddonStrategy):
             print('connect_uart failed,'
                 'Please make sure execute connect uart before')
 
+    def send_data_to_log(self, data):
+        """ send data to uart's log """
+        if not self.save_log:
+            print('Cannot send data to log file,'
+                'Please execute logstart before')
+        else:
+            with open(self.log_file, 'ab') as f:
+                f.write(data.encode('utf-8'))
+                f.write('\n'.encode('utf-8'))
+
     def disconnect(self):
         """ disconnect from uart """
         if self.running:
