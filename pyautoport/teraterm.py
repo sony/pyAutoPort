@@ -95,14 +95,16 @@ def recv_handle(session, queue_recv):
                 break
             if data_function == 'send' and check_connection(session):
                 send(session, data[data_index+1:])
-            if data_function == 'save' and check_connection(session):
-                set_log(session, data[data_index+1:])
+            if data_function == 'logstart' and check_connection(session):
+                set_log(session, data[data_index+1:], True)
             if data_function == 'set_timestamp' and check_connection(session):
                 set_timestamp(session)
             if data_function == 'pause':
                 time.sleep(float(data[data_index+1:]))
             if data_function == 'send_log' and check_connection(session):
                 send_log(session, data[data_index+1:])
+            if data_function == 'logstop' and check_connection(session):
+                set_log(session, None, False)
             time.sleep(0.3)
 
 def check_connection(session):
@@ -152,9 +154,13 @@ def send(session, text):
     """ send text in session """
     session.send_data(text)
 
-def set_log(session, file_name):
-    """ set save log in session """
-    session.set_log(file_name)
+def set_log(session, file_name, save_flag):
+    """ set start/stop log in session """
+    if file_name is not None:
+        session.set_log(log_file=file_name, save_flag=save_flag)
+    else:
+        session.set_log(save_flag=save_flag)
+
     time.sleep(0.3)
 
 def set_timestamp(session):
@@ -218,12 +224,16 @@ def send_via_bash():
     text = ' '.join(args.text)
     client_socket_send(f'itsend@{text}\n'.encode())
 
-def set_log_via_bash():
+def start_log_via_bash():
     """ Python or Bash entry for logstart """
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='Save log')
     args = parser.parse_args()
-    client_socket_send(f'itsave@{args.file}\n'.encode())
+    client_socket_send(f'itlogstart@{args.file}\n'.encode())
+
+def stop_log_via_bash():
+    """ Python or Bash entry for logstop """
+    client_socket_send('itlogstop@\n'.encode())
 
 def set_timestamp_via_bash():
     """ Python or Bash entry for set timestamp display """

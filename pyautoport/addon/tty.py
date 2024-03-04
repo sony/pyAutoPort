@@ -95,7 +95,7 @@ class TTYStrategy(AddonStrategy):
         """ set timeout in uart session """
         self.timeout = timeout
 
-    def set_log(self, log_file):
+    def set_log(self, log_file='tty.log', save_flag=True):
         """ set logstart in uart session """
         if self.port and self.port.is_open:
             self.port.close()
@@ -104,7 +104,7 @@ class TTYStrategy(AddonStrategy):
             port = os.environ.get('TESTER_UART_PORT', '/dev/ttyACM0')
             baudrate = os.environ.get('TESTER_UART_BAUDRATE', '125000')
         self.log_file = log_file
-        self.save_log = True
+        self.save_log = save_flag
         self.connect(port=port, baudrate=baudrate)
         with open(self.log_file, 'w', encoding='utf-8', errors='ignore') as f:
             f.write(f'>>>>>>>>>> tty log start, port={port}, baudrate={baudrate}\n')

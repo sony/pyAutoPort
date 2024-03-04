@@ -75,9 +75,9 @@ class ConnectSession():
         """ set timeout """
         self.strategy.set_timeout(timeout)
 
-    def set_log(self, log_file):
-        """ log start """
-        self.strategy.set_log(log_file)
+    def set_log(self, *args, **kwargs):
+        """ log start/stop """
+        self.strategy.set_log(*args, **kwargs)
 
     def set_timestamp(self):
         """ set timestamp """

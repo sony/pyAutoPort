@@ -44,8 +44,8 @@ class AddonStrategy(ABC):
         """ abstractmentod for set timeout """
 
     @abstractmethod
-    def set_log(self, log_file):
-        """ abstractmentod for set logstart """
+    def set_log(self, log_file, save_flag):
+        """ abstractmentod for set logstart/logstop """
 
     @abstractmethod
     def connect(self):
