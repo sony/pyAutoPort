@@ -79,32 +79,38 @@ def session_start():
 
 def recv_handle(session, queue_recv):
     """ receive commands handle """
+    connect_actions = {
+            "connect": open_conn,
+            "disconnect": close_conn,
+            }
+    handle_actions = {
+            "send": send,
+            "set_timeout": set_timeout,
+            "send_log": send_log,
+            "wait_log": wait_log,
+            }
     while session is not None:
         if queue_recv.qsize() > 0:
             data = queue_recv.get()
             data_index = data.find('@')
             data_function = data[2:data_index]
-            if data_function == 'connect':
-                open_conn(session, data[data_index+1:])
-            if data_function == 'disconnect':
-                close_conn(session, data[data_index+1:])
+            if data_function in connect_actions:
+                connect_actions[data_function](session, data[data_index+1:])
+            if data_function in handle_actions and check_connection(session):
+                handle_actions[data_function](session, data[data_index+1:])
             if data_function == 'stop':
                 close_conn(session, 'all')
                 print('Server listening stop')
                 event_stop_session.set()
                 break
-            if data_function == 'send' and check_connection(session):
-                send(session, data[data_index+1:])
             if data_function == 'logstart' and check_connection(session):
                 set_log(session, data[data_index+1:], True)
+            if data_function == 'logstop' and check_connection(session):
+                set_log(session, None, False)
             if data_function == 'set_timestamp' and check_connection(session):
                 set_timestamp(session)
             if data_function == 'pause':
                 time.sleep(float(data[data_index+1:]))
-            if data_function == 'send_log' and check_connection(session):
-                send_log(session, data[data_index+1:])
-            if data_function == 'logstop' and check_connection(session):
-                set_log(session, None, False)
             time.sleep(0.3)
 
 def check_connection(session):
@@ -167,9 +173,17 @@ def set_timestamp(session):
     """ set timestamp in session """
     session.set_timestamp()
 
+def set_timeout(session, timeout):
+    """ set timeout in session """
+    session.set_timeout(float(timeout))
+
 def send_log(session, text):
     """ send text into log in session """
     session.send_data_to_log(text)
+
+def wait_log(session, text):
+    """ wait text in log in session """
+    session.read_data(text)
 
 def client_socket_send(cmd, need_close=False):
     """ checkt client socket has been created before send command """
@@ -239,6 +253,13 @@ def set_timestamp_via_bash():
     """ Python or Bash entry for set timestamp display """
     client_socket_send('itset_timestamp@\n'.encode())
 
+def set_timeout_via_bash():
+    """ Python or Bash entry for set timeout for session """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('time', type=int, help='milliseconds')
+    args = parser.parse_args()
+    client_socket_send(f'itset_timeout@{args.time}\n'.encode())
+
 def set_pause_via_bash():
     """ Python or Bash entry for time to sleep """
     parser = argparse.ArgumentParser()
@@ -254,6 +275,14 @@ def send_log_via_bash():
     args = parser.parse_args()
     text = ' '.join(args.text)
     client_socket_send(f'itsend_log@{text}\n'.encode())
+
+def wait_log_via_bash():
+    """ Python or Bash entry for wait string exist in log or timeout occureed """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('text', nargs='+', help='Text to wait')
+    args = parser.parse_args()
+    text = ' '.join(args.text)
+    client_socket_send(f'itwait_log@{text}\n'.encode())
 
 def session_stop():
     """ Python or Bash entry for stop session """
