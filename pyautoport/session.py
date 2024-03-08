@@ -31,6 +31,7 @@
 TeraTerm Mode - Connect Session
 """
 
+import os
 from pyautoport.addon.adb import ADBStrategy
 from pyautoport.addon.tty import TTYStrategy
 
@@ -62,6 +63,15 @@ class ConnectSession():
             self.strategy = ADBStrategy()
         else:
             raise ValueError('Invalid connection type')
+
+    def get_env(self, key):
+        """ get environment """
+        envname = os.environ.get(key)
+        print(f'{key} = {envname}')
+
+    def set_env(self, key, value):
+        """ set environment """
+        os.environ[key] = value
 
     def connect(self, *args, **kwargs):
         """ invoke connect """
