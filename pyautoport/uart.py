@@ -75,7 +75,8 @@ def write_and_read_uart():
         print(f'''
 Can\'t Open {port}. Did you set port using:
 export TESTER_UART_PORT=/dev/ttyXXX (On Linux)
-set TESTER_UART_PORT=COMx (On Windows)
+set TESTER_UART_PORT=COMx (For Windows CMD (Command Prompt))
+$Env:TESTER_UART_PORT = 'COMx' (For Windows PowerShell)
         ''')
         return
 
