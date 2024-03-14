@@ -107,9 +107,15 @@ start /B session_start
 ### Send TTL commands
 
 Following commands supported
+- getenv
+- setenv
 - connect
 - logstart
+- logwrite
+- logstop
 - send
+- mapuse
+- waitln
 - disconnect
 
 For additional information, refer to the [TeraTerm Mode](#teraterm-mode) section.
@@ -178,6 +184,22 @@ The `adb_send` command will continuously print text received from ADB until no n
 
 TeraTerm Mode Support TTL commands on Linux or Windows CLI via adb or uart.
 
+## getenv
+
+Gets an environment variable.
+
+```bash
+getenv <envname>
+```
+
+## setenv
+
+Sets an environment variable.
+
+```bash
+setenv <envname> <strval>
+```
+
 ## connect
 
 Start one connection or switch other connection.
@@ -213,6 +235,22 @@ set_timestamp
 logstart <filename>
 ```
 
+## logwrite
+
+Writes a string to the log file.
+
+```bash
+logwrite <string>
+```
+
+## logstop
+
+Stop saving logs into the log file.
+
+```bash
+logstop
+```
+
 ## send
 
 Send commands via current connection.
@@ -220,6 +258,24 @@ Received Messages will be printed on CLI.
 
 ```bash
 send <date1> <date2> ...
+```
+
+## mpause
+
+Pauses.
+
+```bash
+mpause <milliseconds>
+```
+
+## waitln
+
+Waits a line that contains string.
+Pauses until a line which contains one of the character strings is received from the host, or until the timeout occurs.
+
+```bash
+set_timeout 2
+waitln <string1> [<string2> ...]
 ```
 
 ## disconnect
