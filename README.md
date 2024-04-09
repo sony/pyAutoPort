@@ -25,12 +25,19 @@ export TESTER_UART_PORT="/dev/ttyACM0"
 export TESTER_UART_BAUDRATE=1250000
 export TESTER_ADB_PORT=Serial_number
 ```
-- Windows
+- Windows Command Prompt
 
 ```bash
 set TESTER_UART_PORT="COM0"
 set TESTER_UART_BAUDRATE=1250000
 set TESTER_ADB_PORT=Serial_number
+```
+- Windows PowerShell
+
+```bash
+$Env:TESTER_UART_PORT = 'COM0'
+$Env:TESTER_UART_BAUDRATE = 1250000
+$Env:TESTER_ADB_PORT = Serial_number
 ```
 
 > `adb devices -l` can get `Serial_number`. Default `adb shell` if `TESTER_ADB_PORT` not been setted.
