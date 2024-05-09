@@ -87,8 +87,26 @@ def start_adb_daemon():
     server_socket.listen(5)
     print(f"Server listening on port {PORT_ABD_WRITE}")
 
+    try:
+        command_adb = ['/bin/adb', '-s', os.environ["TESTER_ABD_SERIAL"], 'shell']
+        print(f'''
+Listening to {os.environ["TESTER_ABD_SERIAL"]} only.
+Run adb_close and change device id using:
+export TESTER_ABD_SERIAL=XXX (On Linux)
+set TESTER_ABD_SERIAL=XXX (For Windows CMD (Command Prompt))
+$Env:TESTER_ABD_SERIAL = 'XXX' (For Windows PowerShell)
+        ''')
+    except:
+        command_adb = ['/bin/adb', 'shell']
+        print(f'''
+You may specify ADB device id by running adb_close and set:
+export TESTER_ABD_SERIAL=XXX (On Linux)
+set TESTER_ABD_SERIAL=XXX (For Windows CMD (Command Prompt))
+$Env:TESTER_ABD_SERIAL = 'XXX' (For Windows PowerShell)
+        ''')
+
     with subprocess.Popen(
-        ['/bin/adb', 'shell'],
+        command_adb,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE
     ) as adb_session:
         adb_session_thread = threading.Thread(
