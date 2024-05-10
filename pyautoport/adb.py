@@ -96,9 +96,9 @@ export TESTER_ABD_SERIAL=XXX (On Linux)
 set TESTER_ABD_SERIAL=XXX (For Windows CMD (Command Prompt))
 $Env:TESTER_ABD_SERIAL = 'XXX' (For Windows PowerShell)
         ''')
-    except:
+    except KeyError:
         command_adb = ['/bin/adb', 'shell']
-        print(f'''
+        print('''
 You may specify ADB device id by running adb_close and set:
 export TESTER_ABD_SERIAL=XXX (On Linux)
 set TESTER_ABD_SERIAL=XXX (For Windows CMD (Command Prompt))
