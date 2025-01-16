@@ -106,8 +106,8 @@ class TTYStrategy(AddonStrategy):
             self.port.close()
             self.port = None
             self.disconnect()
-            port = os.environ.get('TESTER_UART_PORT', '/dev/ttyACM0')
-            baudrate = os.environ.get('TESTER_UART_BAUDRATE', '125000')
+        port = os.environ.get('TESTER_UART_PORT', '/dev/ttyACM0')
+        baudrate = os.environ.get('TESTER_UART_BAUDRATE', '125000')
         self.log_file = log_file
         self.save_log = save_flag
         self.connect(port=port, baudrate=baudrate)
