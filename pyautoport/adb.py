@@ -42,7 +42,12 @@ from queue import Queue
 
 PORT_ABD_WRITE = 18888
 PORT_ADB_SET_TIMEOUT = 18889
-PID_FILE = '/tmp/tester-adb-daemon.pid'
+# Set the PID_FILE path based on the operating system
+if os.name == 'nt':  # Windows
+    PID_FILE = os.path.join(os.getenv('TEMP', 'C:\\Temp'), 'tester-adb-daemon.pid')
+else:  # Unix/Linux
+    PID_FILE = '/tmp/tester-adb-daemon.pid'
+
 EVENT_STOP_ADB_SESSION = threading.Event()
 EVENT_STOP_ADB_SESSION.clear()
 QUEUE_ADB_OUTPUT = Queue()
@@ -88,7 +93,7 @@ def start_adb_daemon():
     print(f"Server listening on port {PORT_ABD_WRITE}")
 
     try:
-        command_adb = ['/bin/adb', '-s', os.environ["TESTER_ABD_SERIAL"], 'shell']
+        command_adb = ['adb', '-s', os.environ["TESTER_ABD_SERIAL"], 'shell']
         print(f'''
 Listening to {os.environ["TESTER_ABD_SERIAL"]} only.
 Run adb_close and change device id using:
@@ -97,7 +102,7 @@ set TESTER_ABD_SERIAL=XXX (For Windows CMD (Command Prompt))
 $Env:TESTER_ABD_SERIAL = 'XXX' (For Windows PowerShell)
         ''')
     except KeyError:
-        command_adb = ['/bin/adb', 'shell']
+        command_adb = ['adb', 'shell']
         print('''
 You may specify ADB device id by running adb_close and set:
 export TESTER_ABD_SERIAL=XXX (On Linux)
