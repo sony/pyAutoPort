@@ -55,7 +55,7 @@ setup(
         "Homepage": "https://github.com/sony/pyAutoPort",
         "Issues": "https://github.com/sony/pyAutoPort/issues"
     },
-    python_requires='>=3.8,<3.12',
+    python_requires='>=3.8',
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
