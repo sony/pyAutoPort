@@ -155,7 +155,7 @@ class ADBStrategy(AddonStrategy):
         """ set logstart in adb session """
         if self.running:
             self.disconnect()
-            serial_port = os.environ.get('TESTER_ADB_PORT', '')
+        serial_port = os.environ.get('TESTER_ADB_PORT', '')
         self.log_file = log_file
         self.save_log = save_flag
         self.connect(serial_port=serial_port)
