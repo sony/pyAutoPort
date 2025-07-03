@@ -37,17 +37,31 @@ import os
 import serial
 
 def get_default_port():
+    """Returns the default UART port.
+    Read from the TESTER_UART_PORT environment variable or defaulting to /dev/ttyUSB0."""
     # Get UART parameters from environment variable
     port = os.environ.get("TESTER_UART_PORT", "/dev/ttyUSB0")
     return port
 
 def get_default_baudrate():
+    """Returns the default baudrate.
+    Read from the TESTER_UART_BAUDRATE environment variable or defaulting to 115200."""
     # Get UART parameters from environment variable
     baudrate = os.environ.get("TESTER_UART_BAUDRATE", "115200")
     return baudrate
 
 def write_and_read_uart(text, uart_timeout, port=None, baudrate=None):
-    """Send and receive reply"""
+    """Writes text to the UART and reads all available lines until a timeout.
+
+    Args:
+        text: The text to write to the UART.
+        uart_timeout: The timeout for UART operations.
+        port: The UART port to use. If None, the default port is used.
+        baudrate: The baudrate to use. If None, the default baudrate is used.
+
+    Returns:
+        A string containing the reply received from the UART.
+    """
 
     if port is None:
         port = get_default_port()
@@ -73,7 +87,7 @@ def write_and_read_uart(text, uart_timeout, port=None, baudrate=None):
         if not line:
             break
         try:
-            reply += f'{line.decode('utf-8').strip()}\n'
+            reply += f"""{line.decode('utf-8').strip()}\n"""
         except UnicodeDecodeError:
             reply += line.hex()
 
@@ -109,7 +123,7 @@ def uart_send():
         print(write_and_read_uart(text, uart_timeout))
     except serial.serialutil.SerialException:
         print(f'''
-Can\'t Open {port}. Did you set port using:
+Can\'t Open {get_default_port()}. Did you set port using:
 export TESTER_UART_PORT=/dev/ttyXXX (On Linux)
 set TESTER_UART_PORT=COMx (For Windows CMD (Command Prompt))
 $Env:TESTER_UART_PORT = 'COMx' (For Windows PowerShell)
