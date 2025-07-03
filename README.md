@@ -1,8 +1,10 @@
 # Quick Start
 
-pyAutoPort is a BASH/ZSH toolset for communicating with a Device Under Test (DUT) connected via UART and/or ADB. Embedded system engineers can use this toolset for automating tests.
+pyAutoPort is a collection of BASH/ZSH tools that makes it easier and more consistent to communicate with a Device Under Test (DUT) connected via UART or ADB. It's built for embedded system engineers to automate testing.
 
 These commands can be executed directly from the terminal as system commands.
+
+pyAutoPort also provides Python APIs that automatically handles opening and closing the UART connection, incorporates a defined timeout for reading responses, and gracefully handles potential decoding errors by including undecodable data in hexadecimal format.
 
 ## Installation
 
@@ -44,6 +46,8 @@ $Env:TESTER_ADB_PORT = Serial_number
 
 ## Sending UART Commands
 
+### Calling from Command Line
+
 Send UART commands and receive replies with:
 
 ```bash
@@ -59,6 +63,52 @@ uart_send "echo connected"
 You don't need to send other commands to get output; `uart_send` will return the output.
 
 For additional information, refer to the [Basic Mode](#basic-mode) section.
+
+### Calling from Python
+
+The `write_and_read_uart` function allows you to send text to a UART interface and retrieve any response received until a specified timeout occurs.
+
+**Function Signature:**
+
+```python
+def write_and_read_uart(text, uart_timeout, port=None, baudrate=None):
+    """Writes text to the UART and reads all available lines until a timeout.
+
+    Args:
+        text: The text to write to the UART.
+        uart_timeout: The timeout for UART operations (in seconds).
+        port: The UART port to use (e.g., '/dev/ttyUSB0'). If None, the default port is used.
+        baudrate: The baudrate to use (e.g., 115200). If None, the default baudrate is used.
+
+    Returns:
+        A string containing the reply received from the UART.  If any received data could not be decoded as UTF-8, its hexadecimal representation is included in the returned string.
+    """
+```
+
+**Basic Usage:**
+
+To send a simple command and retrieve the response, you can use the following:
+
+```python
+response = write_and_read_uart("AT+INFO\n", 2.0)  # Sends "AT+INFO\n" and waits up to 2 seconds for a response.
+print(response)
+```
+
+**Specifying Port and Baudrate:**
+
+If your UART interface isn't using the default port or baudrate, you can specify them explicitly:
+
+```python
+response = write_and_read_uart("AT+VERSION\n", 1.5, port="/dev/ttyACM0", baudrate=9600)
+print(response)
+```
+
+**Important Considerations:**
+
+*   **Newline Characters:** The function requires a newline character (`\n`) to be appended to the `text` being sent.  The UART device typically expects this to signal the end of the command.
+*   **Timeout:** The `uart_timeout` parameter is crucial. Set it long enough for the device to complete its operation and send a reply, but not so long that the program waits unnecessarily.
+*   **Decoding Errors:**  If the UART device sends data that cannot be decoded using UTF-8, the undecodable portion is represented in the response string using its hexadecimal equivalent.  This helps in debugging communication issues.  You might need to investigate the device's documentation to understand the expected data format.
+*   **Default Port and Baudrate:** The function uses `get_default_port()` and `get_default_baudrate()` to determine the default values if `port` and `baudrate` are not provided.  Make sure these functions are defined and configured correctly.
 
 ## Interacting with ADB
 
