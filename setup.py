@@ -44,7 +44,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='pyAutoPort',
-    version='1.2.3',
+    version='1.3.0',
     author='Yu GU',
     author_email='yu.gu@sony.com',
     description="""
