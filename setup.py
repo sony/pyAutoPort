@@ -65,7 +65,7 @@ setup(
     long_description_content_type='text/markdown',
     entry_points={
         'console_scripts': [
-            'uart_send = pyautoport.uart:write_and_read_uart',
+            'uart_send = pyautoport.uart:uart_send',
             'adb_send = pyautoport.adb:adb_send_via_bash',
             'adb_open = pyautoport.adb:adb_open',
             'adb_reopen = pyautoport.adb:adb_reopen',
