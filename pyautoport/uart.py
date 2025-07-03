@@ -36,12 +36,53 @@ import time
 import os
 import serial
 
-
-def write_and_read_uart():
-    """Send and receive reply"""
+def get_default_port():
     # Get UART parameters from environment variable
     port = os.environ.get("TESTER_UART_PORT", "/dev/ttyUSB0")
+    return port
+
+def get_default_baudrate():
+    # Get UART parameters from environment variable
     baudrate = os.environ.get("TESTER_UART_BAUDRATE", "115200")
+    return baudrate
+
+def write_and_read_uart(text, uart_timeout, port=None, baudrate=None):
+    """Send and receive reply"""
+
+    if port is None:
+        port = get_default_port()
+    if baudrate is None:
+        baudrate = get_default_baudrate()
+
+    # Open UART connection
+    uart = serial.Serial(
+            port=port,
+            baudrate=int(baudrate),
+            timeout=uart_timeout
+    )
+
+    # Send text to UART
+    for byte_to_encode in text:
+        uart.write(byte_to_encode.encode('utf-8'))
+        time.sleep(0.05)
+
+    # Read and print all lines from UART until timeout
+    reply = ''
+    while True:
+        line = uart.readline()
+        if not line:
+            break
+        try:
+            reply += f'{line.decode('utf-8').strip()}\n'
+        except UnicodeDecodeError:
+            reply += line.hex()
+
+    # Close UART connection
+    uart.close()
+    return reply
+
+def uart_send():
+    """Python wrapper to provide consistant command name"""
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
@@ -64,41 +105,12 @@ def write_and_read_uart():
     # Append newline character to text
     text += '\n'
 
-    # Open UART connection
     try:
-        uart = serial.Serial(
-                port=port,
-                baudrate=baudrate,
-                timeout=uart_timeout
-        )
+        print(write_and_read_uart(text, uart_timeout))
     except serial.serialutil.SerialException:
         print(f'''
 Can\'t Open {port}. Did you set port using:
 export TESTER_UART_PORT=/dev/ttyXXX (On Linux)
 set TESTER_UART_PORT=COMx (For Windows CMD (Command Prompt))
 $Env:TESTER_UART_PORT = 'COMx' (For Windows PowerShell)
-        ''')
-        return
-
-    # Send text to UART
-    for byte_to_encode in text:
-        uart.write(byte_to_encode.encode('utf-8'))
-        time.sleep(0.05)
-
-    # Read and print all lines from UART until timeout
-    while True:
-        line = uart.readline()
-        if not line:
-            break
-        try:
-            print(line.decode('utf-8').strip())
-        except UnicodeDecodeError:
-            print(line.hex())
-
-    # Close UART connection
-    uart.close()
-
-
-def uart_send():
-    """Python wrapper to provide consistant command name"""
-    write_and_read_uart()
+''')
